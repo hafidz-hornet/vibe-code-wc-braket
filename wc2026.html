@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FIFA World Cup 2026 - Road to Final</title>
+    <style>
+        :root {
+            --bg-color: #0f121d;
+            --card-bg: #161b2c;
+            --border-color: #2a3454;
+            --accent-green: #00ffaa;
+            --text-color: #ffffff;
+            --text-muted: #8b9bb4;
+            --input-bg: #1e253f;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 4px solid var(--accent-green);
+            padding-bottom: 15px;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(0, 255, 170, 0.3);
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1rem;
+            margin-top: 5px;
+        }
+
+        /* Bracket Layout Container */
+        .bracket-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+            gap: 20px;
+        }
+
+        .bracket-column {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            height: 850px;
+            flex: 1;
+        }
+
+        /* Centerpiece Trophy Section */
+        .center-stage {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1.2;
+            height: 850px;
+            position: relative;
+        }
+
+        .trophy-placeholder {
+            font-size: 5rem;
+            margin-bottom: 10px;
+            filter: drop-shadow(0 0 15px gold);
+        }
+
+        .final-title {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--accent-green);
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            letter-spacing: 3px;
+        }
+
+        /* Match Card Styling */
+        .match-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px 12px;
+            width: 100%;
+            max-width: 245px;
+            position: relative;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .match-card:hover {
+            border-color: var(--accent-green);
+            transform: translateY(-2px);
+        }
+
+        .match-header {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .team-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            margin: 6px 0;
+        }
+
+        .team-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .flag {
+            font-size: 1.15rem;
+        }
+
+        .score-box {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-left: auto;
+        }
+
+        .score-input {
+            width: 36px;
+            height: 30px;
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            color: #fff;
+            text-align: center;
+            font-weight: bold;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .score-input:focus {
+            outline: none;
+            border-color: var(--accent-green);
+        }
+
+        .penalty-input {
+            width: 32px;
+            height: 26px;
+            background-color: #bd2130;
+            border: 1px solid #dc3545;
+            color: #fff;
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .penalty-input.visible {
+            display: block;
+        }
+
+        .center-stage .match-card {
+            max-width: 270px;
+            margin: 15px 0;
+        }
+
+        /* Mobile Responsive View Styling */
+        @media (max-width: 900px) {
+            .bracket-container {
+                flex-direction: column;
+                height: auto;
+                gap: 40px;
+            }
+
+            .bracket-column,
+            .center-stage {
+                height: auto;
+                width: 100%;
+            }
+
+            .bracket-column::before {
+                content: attr(data-round);
+                display: block;
+                font-size: 1.2rem;
+                font-weight: bold;
+                color: var(--accent-green);
+                border-left: 4px solid var(--accent-green);
+                padding-left: 8px;
+                margin-bottom: 15px;
+                text-transform: uppercase;
+            }
+
+            .match-card {
+                max-width: 100%;
+                margin-bottom: 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header style="position: relative;">
+        <h1>Road To Final</h1>
+        <div class="subtitle">FIFA World Cup 2026 Knockout Stage Prediction Bracket</div>
+        <div style="margin-top: 15px;">
+            <a href="wc2026_editor.html"
+                style="background: #1e253f; color: #00ffaa; border: 1px solid #00ffaa; padding: 8px 16px; border-radius: 20px; text-decoration: none; font-weight: 600; font-size: 0.9rem; display: inline-block; transition: all 0.2s ease;">✏️
+                Open Matches JSON Editor & Diff Viewer →</a>
+        </div>
+    </header>
+
+    <div class="bracket-container" id="bracket">
+        <!-- Left Side Rounds -->
+        <div class="bracket-column" data-round="Round of 32 - Left" id="col-r32-left"></div>
+        <div class="bracket-column" data-round="Round of 16 - Left" id="col-r16-left"></div>
+        <div class="bracket-column" data-round="Quarter-Finals - Left" id="col-qf-left"></div>
+        <div class="bracket-column" data-round="Semi-Finals - Left" id="col-sf-left"></div>
+
+        <!-- Center Stage (Final & 3rd Place) -->
+        <div class="center-stage">
+            <div class="trophy-placeholder">🏆</div>
+            <div class="final-title">Finals</div>
+            <div id="col-finals" style="width:100%; display:flex; flex-direction:column; align-items:center;"></div>
+        </div>
+
+        <!-- Right Side Rounds -->
+        <div class="bracket-column" data-round="Semi-Finals - Right" id="col-sf-right"></div>
+        <div class="bracket-column" data-round="Quarter-Finals - Right" id="col-qf-right"></div>
+        <div class="bracket-column" data-round="Round of 16 - Right" id="col-r16-right"></div>
+        <div class="bracket-column" data-round="Round of 32 - Right" id="col-r32-right"></div>
+    </div>
+
+    <script>
+        // Data containing all team mappings, metadata, and schedules from image_25f006.png
+        const teams = {
+            GER: { name: "Germany", code: "GER", flag: "🇩🇪" },
+            PAR: { name: "Paraguay", code: "PAR", flag: "🇵🇾" },
+            FRA: { name: "France", code: "FRA", flag: "🇫🇷" },
+            SWE: { name: "Sweden", code: "SWE", flag: "🇸🇪" },
+            RSA: { name: "South Africa", code: "RSA", flag: "🇿🇦" },
+            CAN: { name: "Canada", code: "CAN", flag: "🇨🇦" },
+            NED: { name: "Netherlands", code: "NED", flag: "🇳🇱" },
+            MAR: { name: "Morocco", code: "MAR", flag: "🇲🇦" },
+            POR: { name: "Portugal", code: "POR", flag: "🇵🇹" },
+            CRO: { name: "Croatia", code: "CRO", flag: "🇭🇷" },
+            ESP: { name: "Spain", code: "ESP", flag: "🇪🇸" },
+            AUT: { name: "Austria", code: "AUT", flag: "🇦🇹" },
+            USA: { name: "United States", code: "USA", flag: "🇺🇸" },
+            BIH: { name: "Bosnia & Herzegovina", code: "BIH", flag: "🇧🇦" },
+            BEL: { name: "Belgium", code: "BEL", flag: "🇧🇪" },
+            SEN: { name: "Senegal", code: "SEN", flag: "🇸🇳" },
+            BRA: { name: "Brazil", code: "BRA", flag: "🇧🇷" },
+            JPN: { name: "Japan", code: "JPN", flag: "🇯🇵" },
+            CIV: { name: "Ivory Coast", code: "CIV", flag: "🇨🇮" },
+            NOR: { name: "Norway", code: "NOR", flag: "🇳🇴" },
+            MEX: { name: "Mexico", code: "MEX", flag: "🇲🇽" },
+            ECU: { name: "Ecuador", code: "ECU", flag: "🇪🇨" },
+            ENG: { name: "England", code: "ENG", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿" },
+            COD: { name: "DR Congo", code: "COD", flag: "🇨🇩" },
+            ARG: { name: "Argentina", code: "ARG", flag: "🇦🇷" },
+            CPV: { name: "Cape Verde", code: "CPV", flag: "🇨🇻" },
+            AUS: { name: "Australia", code: "AUS", flag: "🇦🇺" },
+            EGY: { name: "Egypt", code: "EGY", flag: "🇪🇬" },
+            SUI: { name: "Switzerland", code: "SUI", flag: "🇨🇭" },
+            ALG: { name: "Algeria", code: "ALG", flag: "🇩🇿" },
+            COL: { name: "Colombia", code: "COL", flag: "🇨🇴" },
+            GHA: { name: "Ghana", code: "GHA", flag: "🇬🇭" }
+        };
+
+        const matches = {
+            M74: { "id": "M74", "round": "r32-left", "date": "7-1 04:00", "home": "GER", "away": "PAR", "homeScore": 1, "awayScore": 1, "homePen": 3, "awayPen": 4, "nextMatch": "M89", "side": "home" },
+            M77: { "id": "M77", "round": "r32-left", "date": "7-1 08:00", "home": "FRA", "away": "SWE", "homeScore": 3, "awayScore": 0, "nextMatch": "M89", "side": "away" },
+            M73: { "id": "M73", "round": "r32-left", "date": "7-2 01:00", "home": "RSA", "away": "CAN", "homeScore": 0, "awayScore": 1, "nextMatch": "M90", "side": "home" },
+            M75: { "id": "M75", "round": "r32-left", "date": "7-2 05:00", "home": "NED", "away": "MAR", "homeScore": 1, "awayScore": 1, "homePen": 2, "awayPen": 3, "nextMatch": "M90", "side": "away" },
+            M83: { "id": "M83", "round": "r32-left", "date": "7-3 07:00", "home": "POR", "away": "CRO", "homeScore": "", "awayScore": "", "nextMatch": "M93", "side": "home" },
+            M84: { "id": "M84", "round": "r32-left", "date": "7-3 03:00", "home": "ESP", "away": "AUT", "homeScore": "", "awayScore": "", "nextMatch": "M93", "side": "away" },
+            M81: { "id": "M81", "round": "r32-left", "date": "7-2 08:00", "home": "USA", "away": "BIH", "homeScore": 2, "awayScore": 0, "nextMatch": "M94", "side": "home" },
+            M82: { "id": "M82", "round": "r32-left", "date": "7-2 04:00", "home": "BEL", "away": "SEN", "homeScore": 3, "awayScore": 2, "nextMatch": "M94", "side": "away" },
+            M89: { "id": "M89", "round": "r16-left", "date": "7-5 05:00", "home": "PAR", "away": "FRA", "homeScore": "", "awayScore": "", "nextMatch": "M97", "side": "home" },
+            M90: { "id": "M90", "round": "r16-left", "date": "7-5 01:00", "home": "CAN", "away": "MAR", "homeScore": "", "awayScore": "", "nextMatch": "M97", "side": "away" },
+            M93: { "id": "M93", "round": "r16-left", "date": "7-7 03:00", "home": null, "away": null, "homeScore": "", "awayScore": "", "nextMatch": "M98", "side": "home" },
+            M94: { "id": "M94", "round": "r16-left", "date": "7-7 08:00", "home": "USA", "away": "BEL", "homeScore": "", "awayScore": "", "nextMatch": "M98", "side": "away" },
+            M97: { "id": "M97", "round": "qf-left", "date": "7-10 04:00", "home": null, "away": null, "homeScore": "", "awayScore": "", "nextMatch": "M101", "side": "home" },
+            M98: { "id": "M98", "round": "qf-left", "date": "7-11 03:00", "home": null, "away": null, "homeScore": "", "awayScore": "", "nextMatch": "M101", "side": "away" },
+            M101: { "id": "M101", "round": "sf-left", "date": "7-15 03:00", "home": null, "away": null, "homeScore": "", "awayScore": "", "nextMatch": "M104", "side": "home", "lossNextMatch": "M103", "lossSide": "home" },
+            M76: { "id": "M76", "round": "r32-right", "date": "7-2 04:00", "home": "BRA", "away": "JPN", "homeScore": 2, "awayScore": 1, "nextMatch": "M91", "side": "home" },
+            M78: { "id": "M78", "round": "r32-right", "date": "7-2 08:00", "home": "CIV", "away": "NOR", "homeScore": 1, "awayScore": 2, "nextMatch": "M91", "side": "away" },
+            M79: { "id": "M79", "round": "r32-right", "date": "7-3 02:00", "home": "MEX", "away": "ECU", "homeScore": 2, "awayScore": 0, "nextMatch": "M92", "side": "home" },
+            M80: { "id": "M80", "round": "r32-right", "date": "7-3 06:00", "home": "ENG", "away": "COD", "homeScore": 2, "awayScore": 1, "nextMatch": "M92", "side": "away" },
+            M86: { "id": "M86", "round": "r32-right", "date": "7-4 06:00", "home": "ARG", "away": "CPV", "homeScore": "", "awayScore": "", "nextMatch": "M95", "side": "home" },
+            M88: { "id": "M88", "round": "r32-right", "date": "7-4 02:00", "home": "AUS", "away": "EGY", "homeScore": "", "awayScore": "", "nextMatch": "M95", "side": "away" },
+            M85: { "id": "M85", "round": "r32-right", "date": "7-3 11:00", "home": "SUI", "away": "ALG", "homeScore": "", "awayScore": "", "nextMatch": "M96", "side": "home" },
+            M87: { "id": "M87", "round": "r32-right", "date": "7-4 09:30", "home": "COL", "away": "GHA", "homeScore": "", "awayScore": "", "nextMatch": "M96", "side": "away" },
+            M91: { "id": "M91", "round": "r16-right", "date": "7-6 04:00", "home": "BRA", "away": "NOR", "homeScore": "", "awayScore": "", "nextMatch": "M99", "side": "home" },
+            M92: { "id": "M92", "round": "r16-right", "date": "7-6 08:00", "home": "MEX", "away": "ENG", "homeScore": "", "awayScore": "", "nextMatch": "M99", "side": "away" },
+            M95: { "id": "M95", "round": "r16-right", "date": "7-8 00:00", "home": null, "away": null, "homeScore": "", "awayScore": "", "nextMatch": "M100", "side": "home" },
+            M96: { "id": "M96", "round": "r16-right", "date": "7-8 04:00", "home": null, "away": null, "homeScore": "", "awayScore": "", "nextMatch": "M100", "side": "away" },
+            M99: { "id": "M99", "round": "qf-right", "date": "7-12 05:00", "home": null, "away": null, "homeScore": "", "awayScore": "", "nextMatch": "M102", "side": "home" },
+            M100: { "id": "M100", "round": "qf-right", "date": "7-12 09:00", "home": null, "away": null, "homeScore": "", "awayScore": "", "nextMatch": "M102", "side": "away" },
+            M102: { "id": "M102", "round": "sf-right", "date": "7-16 03:00", "home": null, "away": null, "homeScore": "", "awayScore": "", "nextMatch": "M104", "side": "away", "lossNextMatch": "M103", "lossSide": "away" },
+            M104: { "id": "M104", "round": "finals", "date": "7-20 03:00", home: null, away: null, homeScore: "", awayScore: "", label: "Final" },
+            M103: { "id": "M103", "round": "finals", "date": "7-19 05:00", home: null, away: null, homeScore: "", awayScore: "", label: "3rd" }
+        };
+
+        function renderBracket() {
+            // Clear content columns
+            document.querySelectorAll('.bracket-column, #col-finals').forEach(el => el.innerHTML = '');
+
+            Object.values(matches).forEach(match => {
+                const card = document.createElement('div');
+                card.className = 'match-card';
+                card.id = `card-${match.id}`;
+
+                let headerText = match.label ? `${match.id} • ${match.label}` : match.id;
+
+                // Show penalties helper display check
+                const isTie = match.homeScore !== "" && match.awayScore !== "" && parseInt(match.homeScore) === parseInt(match.awayScore);
+                const penClass = isTie ? 'visible' : '';
+
+                const homeTeam = teams[match.home] || { name: `Winner ${match.id}`, code: match.home || "TBD", flag: "🏳️" };
+                const awayTeam = teams[match.away] || { name: `Winner ${match.id}`, code: match.away || "TBD", flag: "🏳️" };
+
+                card.innerHTML = `
+                    <div class="match-header">
+                        <span style="font-weight: 600; color: #fff;">${headerText}</span>
+                        <span style="color: var(--accent-green); font-size: 0.76rem; font-weight: bold; white-space: nowrap;">${match.date}</span>
+                    </div>
+                    <div class="team-row">
+                        <div class="team-info">
+                            <span class="flag">${homeTeam.flag}</span>
+                            <span>${homeTeam.code}</span>
+                        </div>
+                        <div class="score-box">
+                            <input type="number" class="penalty-input ${penClass}" id="pen-home-${match.id}" value="${match.homePen || ''}" oninput="updateScore('${match.id}', 'homePen', this.value)">
+                            <input type="number" class="score-input" value="${match.homeScore}" oninput="updateScore('${match.id}', 'homeScore', this.value)">
+                        </div>
+                    </div>
+                    <div class="team-row">
+                        <div class="team-info">
+                            <span class="flag">${awayTeam.flag}</span>
+                            <span>${awayTeam.code}</span>
+                        </div>
+                        <div class="score-box">
+                            <input type="number" class="penalty-input ${penClass}" id="pen-away-${match.id}" value="${match.awayPen || ''}" oninput="updateScore('${match.id}', 'awayPen', this.value)">
+                            <input type="number" class="score-input" value="${match.awayScore}" oninput="updateScore('${match.id}', 'awayScore', this.value)">
+                        </div>
+                    </div>
+                `;
+
+                // Append card to correct container block
+                if (match.round === 'finals') {
+                    document.getElementById('col-finals').appendChild(card);
+                } else {
+                    document.getElementById(`col-${match.round}`).appendChild(card);
+                }
+            });
+        }
+
+        function updateScore(matchId, key, value) {
+            const match = matches[matchId];
+            if (value === "") {
+                match[key] = "";
+            } else {
+                match[key] = parseInt(value);
+            }
+
+            // Recalculate winners and pass along the bracket branches
+            evaluateMatchOutcome(matchId);
+            renderBracket();
+        }
+
+        function evaluateMatchOutcome(matchId) {
+            const match = matches[matchId];
+            let winner = null;
+            let loser = null;
+
+            const hs = match.homeScore;
+            const as = match.awayScore;
+
+            if (hs !== "" && as !== "") {
+                if (hs > as) {
+                    winner = match.home;
+                    loser = match.away;
+                } else if (as > hs) {
+                    winner = match.away;
+                    loser = match.home;
+                } else {
+                    // It's a tie, look into penalty shootouts fields
+                    const hp = match.homePen;
+                    const ap = match.awayPen;
+                    if (hp !== "" && ap !== "") {
+                        if (hp > ap) { winner = match.home; loser = match.away; }
+                        if (ap > hp) { winner = match.away; loser = match.home; }
+                    }
+                }
+            }
+
+            // Forward to next stage matches if designated
+            if (match.nextMatch) {
+                const next = matches[match.nextMatch];
+                if (match.side === 'home') next.home = winner;
+                if (match.side === 'away') next.away = winner;
+                evaluateMatchOutcome(match.nextMatch);
+            }
+
+            // Forward to third-place play-off match rules
+            if (match.lossNextMatch) {
+                const lossNext = matches[match.lossNextMatch];
+                if (match.lossSide === 'home') lossNext.home = loser;
+                if (match.lossSide === 'away') lossNext.away = loser;
+                evaluateMatchOutcome(match.lossNextMatch);
+            }
+        }
+
+        // Initial setup execution
+        Object.keys(matches).forEach(matchId => evaluateMatchOutcome(matchId));
+        renderBracket();
+    </script>
+</body>
+
+</html>

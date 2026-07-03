@@ -1,0 +1,1302 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FIFA World Cup 2026 - Matches JSON Editor & Diff Viewer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Fira+Code:wght@400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0e17;
+            --surface-bg: #131826;
+            --card-bg: #1a2133;
+            --card-hover: #222b42;
+            --border-color: #2a3454;
+            --accent-green: #00ffaa;
+            --accent-green-dim: rgba(0, 255, 170, 0.15);
+            --accent-blue: #38b6ff;
+            --text-main: #ffffff;
+            --text-muted: #8b9bb4;
+            --input-bg: #111622;
+            --diff-del-bg: rgba(255, 71, 87, 0.15);
+            --diff-del-border: #ff4757;
+            --diff-ins-bg: rgba(46, 213, 115, 0.15);
+            --diff-ins-border: #2ed573;
+            --font-main: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'Fira Code', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 60px;
+        }
+
+        /* Navbar / Header */
+        header {
+            background: linear-gradient(180deg, rgba(19, 24, 38, 0.9) 0%, rgba(11, 14, 23, 0.8) 100%);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 20px 40px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-title h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            background: linear-gradient(90deg, #fff, var(--accent-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .badge {
+            background: var(--accent-green-dim);
+            color: var(--accent-green);
+            border: 1px solid var(--accent-green);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .toggle-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            user-select: none;
+            background: var(--surface-bg);
+            padding: 8px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+        }
+
+        .toggle-label:hover {
+            border-color: var(--text-muted);
+        }
+
+        .toggle-label input[type="checkbox"] {
+            accent-color: var(--accent-green);
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .btn {
+            background: var(--surface-bg);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-family: var(--font-main);
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary {
+            background: var(--accent-green);
+            color: #000;
+            border-color: var(--accent-green);
+        }
+
+        .btn-primary:hover {
+            background: #00e699;
+            color: #000;
+            box-shadow: 0 0 15px rgba(0, 255, 170, 0.4);
+        }
+
+        .btn-danger {
+            border-color: #ff4757;
+            color: #ff4757;
+        }
+
+        .btn-danger:hover {
+            background: rgba(255, 71, 87, 0.1);
+            color: #ff4757;
+        }
+
+        /* Navigation Links */
+        .nav-link {
+            color: var(--accent-blue);
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .nav-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Main Content Layout */
+        .main-container {
+            max-width: 1600px;
+            margin: 30px auto;
+            padding: 0 40px;
+            width: 100%;
+        }
+
+        /* Filter Tabs */
+        .filter-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: var(--surface-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+            border-color: var(--text-muted);
+        }
+
+        .tab-btn.active {
+            background: var(--accent-green-dim);
+            color: var(--accent-green);
+            border-color: var(--accent-green);
+            box-shadow: 0 0 10px rgba(0, 255, 170, 0.15);
+        }
+
+        .search-box {
+            position: relative;
+            min-width: 260px;
+        }
+
+        .search-box input {
+            width: 100%;
+            background: var(--surface-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 8px 15px 8px 35px;
+            color: var(--text-main);
+            font-family: var(--font-main);
+            font-size: 0.85rem;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .search-box input:focus {
+            border-color: var(--accent-green);
+            box-shadow: 0 0 10px rgba(0, 255, 170, 0.15);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* Editor Grid */
+        .editor-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+            margin-bottom: 50px;
+        }
+
+        .match-editor-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            position: relative;
+            transition: all 0.25s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .match-editor-card:hover {
+            border-color: rgba(0, 255, 170, 0.5);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .match-editor-card.modified {
+            border-color: var(--accent-green);
+            background: linear-gradient(145deg, var(--card-bg), rgba(0, 255, 170, 0.05));
+        }
+
+        .match-editor-card.modified::before {
+            content: "MODIFIED";
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            background: var(--accent-green);
+            color: #000;
+            padding: 2px 6px;
+            border-radius: 4px;
+            letter-spacing: 0.5px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 10px;
+        }
+
+        .match-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .match-id {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .match-round {
+            font-size: 0.75rem;
+            color: var(--accent-blue);
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .match-date {
+            font-size: 0.82rem;
+            color: var(--accent-green);
+            font-weight: bold;
+        }
+
+        .teams-editor {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .team-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--surface-bg);
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .team-row.winner {
+            border-color: rgba(0, 255, 170, 0.3);
+            background: rgba(0, 255, 170, 0.05);
+        }
+
+        .team-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+        }
+
+        .flag {
+            font-size: 1.4rem;
+        }
+
+        .team-name {
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--text-main);
+        }
+
+        .team-code {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .score-controls {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .score-input {
+            width: 46px;
+            height: 38px;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            color: #fff;
+            text-align: center;
+            font-weight: 700;
+            font-size: 1.18rem;
+            border-radius: 6px;
+            font-family: var(--font-mono);
+            transition: all 0.2s ease;
+        }
+
+        .score-input:focus {
+            outline: none;
+            border-color: var(--accent-green);
+            box-shadow: 0 0 8px rgba(0, 255, 170, 0.3);
+        }
+
+        /* Penalty Section */
+        .penalties-section {
+            background: rgba(255, 193, 7, 0.05);
+            border: 1px dashed rgba(255, 193, 7, 0.3);
+            border-radius: 8px;
+            padding: 8px 12px;
+            display: none;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+        }
+
+        .penalties-section.active {
+            display: flex;
+        }
+
+        .pen-label {
+            color: #ffc107;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .pen-inputs {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pen-input {
+            width: 38px;
+            height: 28px;
+            background: #2a1f0a;
+            border: 1px solid #ffc107;
+            color: #ffc107;
+            text-align: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            border-radius: 4px;
+            font-family: var(--font-mono);
+        }
+
+        .pen-input:focus {
+            outline: none;
+            box-shadow: 0 0 8px rgba(255, 193, 7, 0.4);
+        }
+
+        .card-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 4px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .btn-xs {
+            padding: 4px 10px;
+            font-size: 0.75rem;
+            border-radius: 4px;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-xs:hover {
+            color: var(--text-main);
+            border-color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Diff Section at Bottom */
+        .diff-section {
+            background: var(--surface-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .diff-header {
+            background: var(--card-bg);
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .diff-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .diff-title h2 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .diff-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .format-select {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-family: var(--font-main);
+            font-size: 0.85rem;
+            outline: none;
+        }
+
+        .diff-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        @media (max-width: 900px) {
+            .diff-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .diff-pane {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .pane-header {
+            padding: 10px 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .pane-header.left {
+            background: rgba(255, 71, 87, 0.08);
+            color: #ff4757;
+            border-right: 1px solid var(--border-color);
+        }
+
+        .pane-header.right {
+            background: rgba(46, 213, 115, 0.08);
+            color: #2ed573;
+        }
+
+        .code-viewer {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            line-height: 1.6;
+            padding: 16px 0;
+            max-height: 600px;
+            overflow-y: auto;
+            background: var(--bg-color);
+        }
+
+        .pane-left .code-viewer {
+            border-right: 1px solid var(--border-color);
+        }
+
+        .diff-line {
+            display: flex;
+            width: 100%;
+            padding: 0 16px;
+            transition: background 0.15s ease;
+        }
+
+        .diff-line:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .line-num {
+            width: 45px;
+            flex-shrink: 0;
+            color: #4b5876;
+            text-align: right;
+            padding-right: 15px;
+            user-select: none;
+        }
+
+        .line-content {
+            white-space: pre;
+            overflow-x: auto;
+            flex: 1;
+            color: #c0c9dc;
+        }
+
+        .diff-line.deleted {
+            background: var(--diff-del-bg);
+        }
+
+        .diff-line.deleted .line-num {
+            color: #ff4757;
+            font-weight: 600;
+        }
+
+        .diff-line.deleted .line-content {
+            color: #ff8e98;
+        }
+
+        .diff-line.inserted {
+            background: var(--diff-ins-bg);
+        }
+
+        .diff-line.inserted .line-num {
+            color: #2ed573;
+            font-weight: 600;
+        }
+
+        .diff-line.inserted .line-content {
+            color: #7bed9f;
+        }
+
+        .diff-line.empty {
+            background: rgba(255, 255, 255, 0.01);
+            user-select: none;
+        }
+
+        .diff-line.empty .line-content {
+            color: transparent;
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: flex;
+            gap: 15px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .stat-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .stat-dot.del {
+            background: #ff4757;
+        }
+
+        .stat-dot.ins {
+            background: #2ed573;
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--accent-green);
+            color: #000;
+            font-weight: 700;
+            padding: 12px 24px;
+            border-radius: 8px;
+            box-shadow: 0 5px 20px rgba(0, 255, 170, 0.4);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="header-title">
+            <h1>Matches JSON Editor</h1>
+            <span class="badge">Side-by-Side Diff</span>
+        </div>
+        <div class="header-controls">
+            <a href="wc2026.html" class="nav-link">← View Bracket Page</a>
+            <label class="toggle-label"
+                title="Automatically calculate match winners and update subsequent bracket rounds">
+                <input type="checkbox" id="auto-propagate" checked onchange="handlePropagateChange()">
+                <span>Auto-Propagate Winners</span>
+            </label>
+            <button class="btn btn-danger" onclick="resetAllMatches()">↺ Reset Changes</button>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <!-- Filters & Search -->
+        <div class="filter-section">
+            <div class="filter-tabs" id="round-tabs">
+                <button class="tab-btn active" onclick="filterByRound('ALL', this)">All Matches (32)</button>
+                <button class="tab-btn" onclick="filterByRound('r32', this)">Round of 32 (16)</button>
+                <button class="tab-btn" onclick="filterByRound('r16', this)">Round of 16 (8)</button>
+                <button class="tab-btn" onclick="filterByRound('qf', this)">Quarter-Finals (4)</button>
+                <button class="tab-btn" onclick="filterByRound('sf', this)">Semi-Finals (2)</button>
+                <button class="tab-btn" onclick="filterByRound('finals', this)">Finals (2)</button>
+            </div>
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="search-input" placeholder="Search match ID or team (e.g. M74, GER)..."
+                    oninput="filterMatches()">
+            </div>
+        </div>
+
+        <!-- Editor Cards Grid -->
+        <div class="editor-grid" id="editor-grid">
+            <!-- Cards populated dynamically -->
+        </div>
+
+        <!-- Side-by-Side Diff Section -->
+        <section class="diff-section">
+            <div class="diff-header">
+                <div class="diff-title">
+                    <h2>Live Side-by-Side Diff</h2>
+                    <div class="stats-bar" id="diff-stats">
+                        <div class="stat-item"><span class="stat-dot del"></span><span id="stat-del">0 deletions</span>
+                        </div>
+                        <div class="stat-item"><span class="stat-dot ins"></span><span id="stat-ins">0 insertions</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="diff-controls">
+                    <label style="font-size: 0.85rem; color: var(--text-muted);">JSON Format:</label>
+                    <select class="format-select" id="json-format" onchange="renderDiff()">
+                        <option value="compact">1 Line Per Match (JS Object Style)</option>
+                        <option value="multiline">Multiline JSON (2 Spaces)</option>
+                    </select>
+                    <label class="toggle-label" style="padding: 6px 12px;">
+                        <input type="checkbox" id="show-only-diff" onchange="renderDiff()">
+                        <span>Show Only Differences</span>
+                    </label>
+                    <button class="btn btn-primary" onclick="copyModifiedJSON()">📋 Copy Modified JSON</button>
+                </div>
+            </div>
+
+            <div class="diff-container">
+                <div class="diff-pane pane-left">
+                    <div class="pane-header left">
+                        <span>Original matches JSON</span>
+                        <span>wc2026.html (Base)</span>
+                    </div>
+                    <div class="code-viewer" id="viewer-left" onscroll="syncScroll('left')"></div>
+                </div>
+                <div class="diff-pane pane-right">
+                    <div class="pane-header right">
+                        <span>Modified matches JSON</span>
+                        <span id="mod-status">Current State</span>
+                    </div>
+                    <div class="code-viewer" id="viewer-right" onscroll="syncScroll('right')"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div class="toast" id="toast">Copied to clipboard!</div>
+
+    <script>
+        // Teams dictionary exactly from wc2026.html
+        const teams = {
+            GER: { name: "Germany", code: "GER", flag: "🇩🇪" },
+            PAR: { name: "Paraguay", code: "PAR", flag: "🇵🇾" },
+            FRA: { name: "France", code: "FRA", flag: "🇫🇷" },
+            SWE: { name: "Sweden", code: "SWE", flag: "🇸🇪" },
+            RSA: { name: "South Africa", code: "RSA", flag: "🇿🇦" },
+            CAN: { name: "Canada", code: "CAN", flag: "🇨🇦" },
+            NED: { name: "Netherlands", code: "NED", flag: "🇳🇱" },
+            MAR: { name: "Morocco", code: "MAR", flag: "🇲🇦" },
+            POR: { name: "Portugal", code: "POR", flag: "🇵🇹" },
+            CRO: { name: "Croatia", code: "CRO", flag: "🇭🇷" },
+            ESP: { name: "Spain", code: "ESP", flag: "🇪🇸" },
+            AUT: { name: "Austria", code: "AUT", flag: "🇦🇹" },
+            USA: { name: "United States", code: "USA", flag: "🇺🇸" },
+            BIH: { name: "Bosnia & Herzegovina", code: "BIH", flag: "🇧🇦" },
+            BEL: { name: "Belgium", code: "BEL", flag: "🇧🇪" },
+            SEN: { name: "Senegal", code: "SEN", flag: "🇸🇳" },
+            BRA: { name: "Brazil", code: "BRA", flag: "🇧🇷" },
+            JPN: { name: "Japan", code: "JPN", flag: "🇯🇵" },
+            CIV: { name: "Ivory Coast", code: "CIV", flag: "🇨🇮" },
+            NOR: { name: "Norway", code: "NOR", flag: "🇳🇴" },
+            MEX: { name: "Mexico", code: "MEX", flag: "🇲🇽" },
+            ECU: { name: "Ecuador", code: "ECU", flag: "🇪🇨" },
+            ENG: { name: "England", code: "ENG", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿" },
+            COD: { name: "DR Congo", code: "COD", flag: "🇨🇩" },
+            ARG: { name: "Argentina", code: "ARG", flag: "🇦🇷" },
+            CPV: { name: "Cape Verde", code: "CPV", flag: "🇨🇻" },
+            AUS: { name: "Australia", code: "AUS", flag: "🇦🇺" },
+            EGY: { name: "Egypt", code: "EGY", flag: "🇪🇬" },
+            SUI: { name: "Switzerland", code: "SUI", flag: "🇨🇭" },
+            ALG: { name: "Algeria", code: "ALG", flag: "🇩🇿" },
+            COL: { name: "Colombia", code: "COL", flag: "🇨🇴" },
+            GHA: { name: "Ghana", code: "GHA", flag: "🇬🇭" }
+        };
+
+        // Original baseline matches object
+        const originalMatches = {
+            M74: { "id": "M74", "round": "r32-left", "date": "7-1 04:00", "home": "GER", "away": "PAR", "homeScore": 1, "awayScore": 1, "homePen": 3, "awayPen": 4, "nextMatch": "M89", "side": "home" },
+            M77: { "id": "M77", "round": "r32-left", "date": "7-1 08:00", "home": "FRA", "away": "SWE", "homeScore": 3, "awayScore": 0, "nextMatch": "M89", "side": "away" },
+            M73: { "id": "M73", "round": "r32-left", "date": "7-2 01:00", "home": "RSA", "away": "CAN", "homeScore": 0, "awayScore": 1, "nextMatch": "M90", "side": "home" },
+            M75: { "id": "M75", "round": "r32-left", "date": "7-2 05:00", "home": "NED", "away": "MAR", "homeScore": 1, "awayScore": 1, "homePen": 2, "awayPen": 3, "nextMatch": "M90", "side": "away" },
+            M83: { "id": "M83", "round": "r32-left", "date": "7-3 07:00", "home": "POR", "away": "CRO", "homeScore": "", "awayScore": "", "nextMatch": "M93", "side": "home" },
+            M84: { "id": "M84", "round": "r32-left", "date": "7-3 03:00", "home": "ESP", "away": "AUT", "homeScore": "", "awayScore": "", "nextMatch": "M93", "side": "away" },
+            M81: { "id": "M81", "round": "r32-left", "date": "7-2 08:00", "home": "USA", "away": "BIH", "homeScore": 2, "awayScore": 0, "nextMatch": "M94", "side": "home" },
+            M82: { "id": "M82", "round": "r32-left", "date": "7-2 04:00", "home": "BEL", "away": "SEN", "homeScore": 3, "awayScore": 2, "nextMatch": "M94", "side": "away" },
+            M89: { "id": "M89", "round": "r16-left", "date": "7-5 05:00", "home": "PAR", "away": "FRA", "homeScore": "", "awayScore": "", "nextMatch": "M97", "side": "home" },
+            M90: { "id": "M90", "round": "r16-left", "date": "7-5 01:00", "home": "CAN", "away": "MAR", "homeScore": "", "awayScore": "", "nextMatch": "M97", "side": "away" },
+            M93: { "id": "M93", "round": "r16-left", "date": "7-7 03:00", "home": null, "away": null, "homeScore": "", "awayScore": "", "nextMatch": "M98", "side": "home" },
+            M94: { "id": "M94", "round": "r16-left", "date": "7-7 08:00", "home": "USA", "away": "BEL", "homeScore": "", "awayScore": "", "nextMatch": "M98", "side": "away" },
+            M97: { "id": "M97", "round": "qf-left", "date": "7-10 04:00", "home": null, "away": null, "homeScore": "", "awayScore": "", "nextMatch": "M101", "side": "home" },
+            M98: { "id": "M98", "round": "qf-left", "date": "7-11 03:00", "home": null, "away": null, "homeScore": "", "awayScore": "", "nextMatch": "M101", "side": "away" },
+            M101: { "id": "M101", "round": "sf-left", "date": "7-15 03:00", "home": null, "away": null, "homeScore": "", "awayScore": "", "nextMatch": "M104", "side": "home", "lossNextMatch": "M103", "lossSide": "home" },
+            M76: { "id": "M76", "round": "r32-right", "date": "7-2 04:00", "home": "BRA", "away": "JPN", "homeScore": 2, "awayScore": 1, "nextMatch": "M91", "side": "home" },
+            M78: { "id": "M78", "round": "r32-right", "date": "7-2 08:00", "home": "CIV", "away": "NOR", "homeScore": 1, "awayScore": 2, "nextMatch": "M91", "side": "away" },
+            M79: { "id": "M79", "round": "r32-right", "date": "7-3 02:00", "home": "MEX", "away": "ECU", "homeScore": 2, "awayScore": 0, "nextMatch": "M92", "side": "home" },
+            M80: { "id": "M80", "round": "r32-right", "date": "7-3 06:00", "home": "ENG", "away": "COD", "homeScore": 2, "awayScore": 1, "nextMatch": "M92", "side": "away" },
+            M86: { "id": "M86", "round": "r32-right", "date": "7-4 06:00", "home": "ARG", "away": "CPV", "homeScore": "", "awayScore": "", "nextMatch": "M95", "side": "home" },
+            M88: { "id": "M88", "round": "r32-right", "date": "7-4 02:00", "home": "AUS", "away": "EGY", "homeScore": "", "awayScore": "", "nextMatch": "M95", "side": "away" },
+            M85: { "id": "M85", "round": "r32-right", "date": "7-3 11:00", "home": "SUI", "away": "ALG", "homeScore": "", "awayScore": "", "nextMatch": "M96", "side": "home" },
+            M87: { "id": "M87", "round": "r32-right", "date": "7-4 09:30", "home": "COL", "away": "GHA", "homeScore": "", "awayScore": "", "nextMatch": "M96", "side": "away" },
+            M91: { "id": "M91", "round": "r16-right", "date": "7-6 04:00", "home": "BRA", "away": "NOR", "homeScore": "", "awayScore": "", "nextMatch": "M99", "side": "home" },
+            M92: { "id": "M92", "round": "r16-right", "date": "7-6 08:00", "home": "MEX", "away": "ENG", "homeScore": "", "awayScore": "", "nextMatch": "M99", "side": "away" },
+            M95: { "id": "M95", "round": "r16-right", "date": "7-8 00:00", "home": null, "away": null, "homeScore": "", "awayScore": "", "nextMatch": "M100", "side": "home" },
+            M96: { "id": "M96", "round": "r16-right", "date": "7-8 04:00", "home": null, "away": null, "homeScore": "", "awayScore": "", "nextMatch": "M100", "side": "away" },
+            M99: { "id": "M99", "round": "qf-right", "date": "7-12 05:00", "home": null, "away": null, "homeScore": "", "awayScore": "", "nextMatch": "M102", "side": "home" },
+            M100: { "id": "M100", "round": "qf-right", "date": "7-12 09:00", "home": null, "away": null, "homeScore": "", "awayScore": "", "nextMatch": "M102", "side": "away" },
+            M102: { "id": "M102", "round": "sf-right", "date": "7-16 03:00", "home": null, "away": null, "homeScore": "", "awayScore": "", "nextMatch": "M104", "side": "away", "lossNextMatch": "M103", "lossSide": "away" },
+            M104: { "id": "M104", "round": "finals", "date": "7-20 03:00", "home": null, "away": null, "homeScore": "", "awayScore": "", "label": "Final" },
+            M103: { "id": "M103", "round": "finals", "date": "7-19 05:00", "home": null, "away": null, "homeScore": "", "awayScore": "", "label": "3rd" }
+        };
+
+        // Active working copy of matches
+        let matches = JSON.parse(JSON.stringify(originalMatches));
+        let currentFilterRound = 'ALL';
+
+        function init() {
+            if (document.getElementById('auto-propagate').checked) {
+                recalculateBracket();
+            }
+            renderEditorCards();
+            renderDiff();
+        }
+
+        function handlePropagateChange() {
+            if (document.getElementById('auto-propagate').checked) {
+                recalculateBracket();
+            }
+            renderEditorCards();
+            renderDiff();
+        }
+
+        function recalculateBracket() {
+            Object.keys(matches).forEach(matchId => evaluateMatchOutcome(matchId));
+        }
+
+        function evaluateMatchOutcome(matchId) {
+            const match = matches[matchId];
+            let winner = null;
+            let loser = null;
+
+            const hs = match.homeScore;
+            const as = match.awayScore;
+
+            if (hs !== "" && as !== "") {
+                if (hs > as) {
+                    winner = match.home;
+                    loser = match.away;
+                } else if (as > hs) {
+                    winner = match.away;
+                    loser = match.home;
+                } else {
+                    const hp = match.homePen;
+                    const ap = match.awayPen;
+                    if (hp !== undefined && hp !== "" && ap !== undefined && ap !== "") {
+                        if (hp > ap) { winner = match.home; loser = match.away; }
+                        if (ap > hp) { winner = match.away; loser = match.home; }
+                    }
+                }
+            }
+
+            if (match.nextMatch) {
+                const next = matches[match.nextMatch];
+                if (match.side === 'home') next.home = winner;
+                if (match.side === 'away') next.away = winner;
+                evaluateMatchOutcome(match.nextMatch);
+            }
+
+            if (match.lossNextMatch) {
+                const lossNext = matches[match.lossNextMatch];
+                if (match.lossSide === 'home') lossNext.home = loser;
+                if (match.lossSide === 'away') lossNext.away = loser;
+                evaluateMatchOutcome(match.lossNextMatch);
+            }
+        }
+
+        function getTeamDetails(code, fallbackName) {
+            if (!code) return { name: fallbackName || "TBD", code: "---", flag: "🏳️" };
+            return teams[code] || { name: code, code: code, flag: "🏳️" };
+        }
+
+        function formatRoundLabel(round) {
+            const map = {
+                'r32-left': 'Round of 32 (Left)',
+                'r32-right': 'Round of 32 (Right)',
+                'r16-left': 'Round of 16 (Left)',
+                'r16-right': 'Round of 16 (Right)',
+                'qf-left': 'Quarter-Final (Left)',
+                'qf-right': 'Quarter-Final (Right)',
+                'sf-left': 'Semi-Final (Left)',
+                'sf-right': 'Semi-Final (Right)',
+                'finals': 'Finals Stage'
+            };
+            return map[round] || round;
+        }
+
+        function isMatchModified(id) {
+            return JSON.stringify(matches[id]) !== JSON.stringify(originalMatches[id]);
+        }
+
+        function renderEditorCards() {
+            const grid = document.getElementById('editor-grid');
+            grid.innerHTML = '';
+
+            const searchQuery = document.getElementById('search-input').value.trim().toLowerCase();
+
+            Object.values(matches).forEach(match => {
+                // Filter checks
+                if (currentFilterRound !== 'ALL' && !match.round.startsWith(currentFilterRound)) {
+                    return;
+                }
+
+                const homeTeam = getTeamDetails(match.home, `Winner ${match.id}`);
+                const awayTeam = getTeamDetails(match.away, `Winner ${match.id}`);
+
+                if (searchQuery) {
+                    const matchStr = `${match.id} ${match.label || ''} ${homeTeam.name} ${homeTeam.code} ${awayTeam.name} ${awayTeam.code}`.toLowerCase();
+                    if (!matchStr.includes(searchQuery)) return;
+                }
+
+                const modified = isMatchModified(match.id);
+                const isTie = match.homeScore !== "" && match.awayScore !== "" && parseInt(match.homeScore) === parseInt(match.awayScore);
+
+                // Check winner status
+                let homeWin = false;
+                let awayWin = false;
+                if (match.homeScore !== "" && match.awayScore !== "") {
+                    if (match.homeScore > match.awayScore) homeWin = true;
+                    else if (match.awayScore > match.homeScore) awayWin = true;
+                    else if (match.homePen !== undefined && match.awayPen !== undefined) {
+                        if (match.homePen > match.awayPen) homeWin = true;
+                        if (match.awayPen > match.homePen) awayWin = true;
+                    }
+                }
+
+                const card = document.createElement('div');
+                card.className = `match-editor-card ${modified ? 'modified' : ''}`;
+
+                card.innerHTML = `
+                    <div class="card-header">
+                        <div class="match-meta">
+                            <span class="match-id">${match.id} ${match.label ? `• <span style="font-weight:400; color:var(--accent-green);">${match.label}</span>` : ''}</span>
+                            <span class="match-round">${formatRoundLabel(match.round)}</span>
+                        </div>
+                        <span class="match-date">${match.date}</span>
+                    </div>
+
+                    <div class="teams-editor">
+                        <div class="team-row ${homeWin ? 'winner' : ''}">
+                            <div class="team-info">
+                                <span class="flag">${homeTeam.flag}</span>
+                                <div>
+                                    <div class="team-name">${homeTeam.name}</div>
+                                    <span class="team-code">${homeTeam.code}</span>
+                                </div>
+                            </div>
+                            <div class="score-controls">
+                                <input type="number" class="score-input" value="${match.homeScore}" 
+                                       placeholder="-" oninput="updateScore('${match.id}', 'homeScore', this.value)">
+                            </div>
+                        </div>
+
+                        <div class="team-row ${awayWin ? 'winner' : ''}">
+                            <div class="team-info">
+                                <span class="flag">${awayTeam.flag}</span>
+                                <div>
+                                    <div class="team-name">${awayTeam.name}</div>
+                                    <span class="team-code">${awayTeam.code}</span>
+                                </div>
+                            </div>
+                            <div class="score-controls">
+                                <input type="number" class="score-input" value="${match.awayScore}" 
+                                       placeholder="-" oninput="updateScore('${match.id}', 'awayScore', this.value)">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="penalties-section ${isTie ? 'active' : ''}">
+                        <span class="pen-label">⚽ Pen Shootout</span>
+                        <div class="pen-inputs">
+                            <span style="color:#ffc107; font-size:0.75rem;">Home:</span>
+                            <input type="number" class="pen-input" value="${match.homePen !== undefined ? match.homePen : ''}" 
+                                   placeholder="-" oninput="updateScore('${match.id}', 'homePen', this.value)">
+                            <span style="color:#ffc107; font-size:0.75rem; margin-left:6px;">Away:</span>
+                            <input type="number" class="pen-input" value="${match.awayPen !== undefined ? match.awayPen : ''}" 
+                                   placeholder="-" oninput="updateScore('${match.id}', 'awayPen', this.value)">
+                        </div>
+                    </div>
+
+                    <div class="card-actions">
+                        <button class="btn-xs" onclick="clearMatchScore('${match.id}')">Clear Score</button>
+                        ${modified ? `<button class="btn-xs" style="color:var(--accent-green);" onclick="resetSingleMatch('${match.id}')">Reset Match</button>` : ''}
+                    </div>
+                `;
+
+                grid.appendChild(card);
+            });
+        }
+
+        function updateScore(id, field, val) {
+            const numVal = val === "" ? "" : parseInt(val);
+            matches[id][field] = numVal;
+
+            if (document.getElementById('auto-propagate').checked) {
+                recalculateBracket();
+            }
+
+            renderEditorCards();
+            renderDiff();
+        }
+
+        function clearMatchScore(id) {
+            matches[id].homeScore = "";
+            matches[id].awayScore = "";
+            if (matches[id].homePen !== undefined) delete matches[id].homePen;
+            if (matches[id].awayPen !== undefined) delete matches[id].awayPen;
+
+            if (document.getElementById('auto-propagate').checked) {
+                recalculateBracket();
+            }
+
+            renderEditorCards();
+            renderDiff();
+        }
+
+        function resetSingleMatch(id) {
+            matches[id] = JSON.parse(JSON.stringify(originalMatches[id]));
+
+            if (document.getElementById('auto-propagate').checked) {
+                recalculateBracket();
+            }
+
+            renderEditorCards();
+            renderDiff();
+        }
+
+        function resetAllMatches() {
+            if (confirm("Are you sure you want to reset all edits back to the original schedule?")) {
+                matches = JSON.parse(JSON.stringify(originalMatches));
+                if (document.getElementById('auto-propagate').checked) {
+                    recalculateBracket();
+                }
+                renderEditorCards();
+                renderDiff();
+            }
+        }
+
+        function filterByRound(round, btnEl) {
+            currentFilterRound = round;
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            if (btnEl) btnEl.classList.add('active');
+            renderEditorCards();
+        }
+
+        function filterMatches() {
+            renderEditorCards();
+        }
+
+        // --- Diff Engine & Renderer ---
+        function formatJSONLines(obj, format) {
+            if (format === 'compact') {
+                const lines = ['const matches = {'];
+                const keys = Object.keys(obj);
+                keys.forEach((key, idx) => {
+                    const comma = idx < keys.length - 1 ? ',' : '';
+                    // Clean compact string format matching JS style
+                    const valStr = JSON.stringify(obj[key]).replace(/,/g, ', ');
+                    lines.push(`    ${key}: ${valStr}${comma}`);
+                });
+                lines.push('};');
+                return lines;
+            } else {
+                const formatted = JSON.stringify(obj, null, 2);
+                const lines = formatted.split('\n');
+                lines[0] = 'const matches = {';
+                lines[lines.length - 1] = '};';
+                return lines;
+            }
+        }
+
+        function computeSideBySideDiff(oldLines, newLines) {
+            // Because structure ordering is consistent in matches object, line-by-line comparison is clean
+            const rows = [];
+            let delCount = 0;
+            let insCount = 0;
+
+            const maxLen = Math.max(oldLines.length, newLines.length);
+
+            for (let i = 0; i < maxLen; i++) {
+                const oldL = oldLines[i];
+                const newL = newLines[i];
+
+                if (oldL === newL) {
+                    rows.push({
+                        leftNum: i + 1,
+                        leftText: oldL || '',
+                        leftClass: '',
+                        rightNum: i + 1,
+                        rightText: newL || '',
+                        rightClass: ''
+                    });
+                } else {
+                    if (oldL !== undefined && newL !== undefined) {
+                        delCount++;
+                        insCount++;
+                        rows.push({
+                            leftNum: i + 1,
+                            leftText: oldL,
+                            leftClass: 'deleted',
+                            rightNum: i + 1,
+                            rightText: newL,
+                            rightClass: 'inserted'
+                        });
+                    } else if (oldL !== undefined) {
+                        delCount++;
+                        rows.push({
+                            leftNum: i + 1,
+                            leftText: oldL,
+                            leftClass: 'deleted',
+                            rightNum: '',
+                            rightText: '',
+                            rightClass: 'empty'
+                        });
+                    } else if (newL !== undefined) {
+                        insCount++;
+                        rows.push({
+                            leftNum: '',
+                            leftText: '',
+                            leftClass: 'empty',
+                            rightNum: i + 1,
+                            rightText: newL,
+                            rightClass: 'inserted'
+                        });
+                    }
+                }
+            }
+
+            return { rows, delCount, insCount };
+        }
+
+        function renderDiff() {
+            const format = document.getElementById('json-format').value;
+            const onlyDiff = document.getElementById('show-only-diff').checked;
+
+            const oldLines = formatJSONLines(originalMatches, format);
+            const newLines = formatJSONLines(matches, format);
+
+            const { rows, delCount, insCount } = computeSideBySideDiff(oldLines, newLines);
+
+            document.getElementById('stat-del').textContent = `${delCount} deletion${delCount !== 1 ? 's' : ''}`;
+            document.getElementById('stat-ins').textContent = `${insCount} insertion${insCount !== 1 ? 's' : ''}`;
+
+            const leftViewer = document.getElementById('viewer-left');
+            const rightViewer = document.getElementById('viewer-right');
+
+            let leftHtml = '';
+            let rightHtml = '';
+
+            rows.forEach(row => {
+                if (onlyDiff && row.leftClass === '' && row.rightClass === '') {
+                    return;
+                }
+
+                leftHtml += `
+                    <div class="diff-line ${row.leftClass}">
+                        <span class="line-num">${row.leftNum}</span>
+                        <span class="line-content">${escapeHtml(row.leftText)}</span>
+                    </div>
+                `;
+
+                rightHtml += `
+                    <div class="diff-line ${row.rightClass}">
+                        <span class="line-num">${row.rightNum}</span>
+                        <span class="line-content">${escapeHtml(row.rightText)}</span>
+                    </div>
+                `;
+            });
+
+            if (onlyDiff && delCount === 0 && insCount === 0) {
+                leftHtml = `<div style="padding:20px; color:var(--text-muted); text-align:center;">No differences found. Everything matches the original file.</div>`;
+                rightHtml = `<div style="padding:20px; color:var(--accent-green); text-align:center;">Working JSON is identical to original baseline.</div>`;
+            }
+
+            leftViewer.innerHTML = leftHtml;
+            rightViewer.innerHTML = rightHtml;
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        let isSyncingLeft = false;
+        let isSyncingRight = false;
+
+        function syncScroll(side) {
+            const left = document.getElementById('viewer-left');
+            const right = document.getElementById('viewer-right');
+
+            if (side === 'left') {
+                if (!isSyncingLeft) {
+                    isSyncingRight = true;
+                    right.scrollTop = left.scrollTop;
+                    right.scrollLeft = left.scrollLeft;
+                }
+                isSyncingLeft = false;
+            } else {
+                if (!isSyncingRight) {
+                    isSyncingLeft = true;
+                    left.scrollTop = right.scrollTop;
+                    left.scrollLeft = right.scrollLeft;
+                }
+                isSyncingRight = false;
+            }
+        }
+
+        function copyModifiedJSON() {
+            const format = document.getElementById('json-format').value;
+            const lines = formatJSONLines(matches, format);
+            const fullText = lines.join('\n');
+
+            navigator.clipboard.writeText(fullText).then(() => {
+                const toast = document.getElementById('toast');
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 2500);
+            });
+        }
+
+        // Initialize application
+        init();
+    </script>
+</body>
+
+</html>
